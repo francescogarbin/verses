@@ -1,0 +1,66 @@
+services:
+  # Database MySQL
+  db:
+    image: mysql:8.0
+    container_name: verses_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: verses
+      MYSQL_USER: verses_user
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    networks:
+      - verses_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend FastAPI
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: verses_api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: mysql+pymysql://verses_user:${MYSQL_PASSWORD}@db:3306/verses
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: ${DEBUG:-False}
+    volumes:
+      - ./backend/app:/app
+      - ./logs:/logs
+    networks:
+      - verses_network
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: verses_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./logs:/var/log/nginx
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    networks:
+      - verses_network
+    depends_on:
+      - api
+
+networks:
+  verses_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
