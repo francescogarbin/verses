@@ -53,6 +53,7 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./logs:/var/log/nginx
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./frontend:/usr/share/nginx/html
     networks:
       - verses_network
     depends_on:
