@@ -1,12 +1,13 @@
 # Environment variables
 .env
 .env.*
-.env.develoment
+!.env.example
+.env.development
 .env.production
 backend/.env
 backend/.env.*
 backend/.env.production
-backend/.env.develoment
+backend/.env.development
 
 # Python
 __pycache__/
