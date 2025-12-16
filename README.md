@@ -75,6 +75,12 @@ cd verses
 # Copy example env file
 cp .env.example .env.development
 
+# Set the environment variables in .env.development
+$VERSES_MYSQL_ROOT_PASSWORD
+$VERSES_MYSQL_PASSWORD
+$VERSES_SECRET
+$VERSES_DEBUG
+
 # Edit with your settings
 nano .env.development
 

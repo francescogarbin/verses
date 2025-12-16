@@ -5,10 +5,10 @@ services:
     container_name: verses_db
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${VERSES_MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: verses
       MYSQL_USER: verses_user
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_PASSWORD: ${VERSES_MYSQL_PASSWORD}
     volumes:
       - ./data/mysql:/var/lib/mysql
     networks:
@@ -29,9 +29,9 @@ services:
     container_name: verses_api
     restart: unless-stopped
     environment:
-      DATABASE_URL: mysql+pymysql://verses_user:${MYSQL_PASSWORD}@db:3306/verses
-      SECRET_KEY: ${SECRET_KEY}
-      DEBUG: ${DEBUG:-False}
+      DATABASE_URL: mysql+pymysql://verses_user:${VERSES_MYSQL_PASSWORD}@db:3306/verses
+      SECRET_KEY: ${VERSES_SECRET_KEY}
+      DEBUG: ${VERSES_DEBUG:-False}
     volumes:
       - ./backend/app:/app
       - ./logs:/logs

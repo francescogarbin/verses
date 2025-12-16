@@ -20,7 +20,7 @@ uvicorn app.main:app --reload
 ### Production Deployment
 ```bash
 cp .env.example .env.development
-# Set SECRET_KEY, MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD
+# Set VERSES_SECRET_KEY, VERSES_MYSQL_PASSWORD, VERSES_MYSQL_ROOT_PASSWORD
 docker compose up -d --build
 docker compose logs -f
 ```
