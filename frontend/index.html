@@ -67,9 +67,9 @@
     <!-- Color Picker Dialog -->
     <color-picker id="color-picker"></color-picker>
 
-    <!-- Register Service Worker -->
+    <!-- Register Service Worker in production: https only -->
     <script>
-        if ('serviceWorker' in navigator) {
+        if ('serviceWorker' in navigator && location.protocol === 'https:') {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
                     .then(reg => console.log('Service Worker registered'))

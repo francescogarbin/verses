@@ -39,12 +39,27 @@ class NotebooksSidebar extends HTMLElement {
           background: #fafafa;
           border-right: 1px solid #d3d7cf;
           overflow: hidden;
+          width: 100%;
+          height: 100%;
+        }
+
+        @media (max-width: 768px) {
+          :host {
+            border-right: none;
+          }
         }
 
         .sidebar-header {
+          display: flex;
+          flex-direction: row;
+          gap: 0.5rem;
           padding: 1rem;
           border-bottom: 1px solid #d3d7cf;
           flex-shrink: 0;
+        }
+        
+        .sidebar-header div:last-child {
+          margin-left: auto;
         }
 
         .sidebar-header h2 {
@@ -56,7 +71,8 @@ class NotebooksSidebar extends HTMLElement {
         }
 
         .btn-new-notebook {
-          width: 100%;
+          height: 2rem;
+          width: auto;
           padding: 0.5rem;
           border: none;
           border-radius: 6px;
@@ -68,7 +84,8 @@ class NotebooksSidebar extends HTMLElement {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 0.5rem;
+          gap: 0.25rem;
+          margin-left: auto;
         }
 
         .btn-new-notebook:hover {
@@ -126,7 +143,7 @@ class NotebooksSidebar extends HTMLElement {
         <h2>Notebooks</h2>
         <button class="btn-new-notebook" id="new-notebook-btn">
           <span>+</span>
-          <span>New Notebook</span>
+          <span>New</span>
         </button>
       </div>
 

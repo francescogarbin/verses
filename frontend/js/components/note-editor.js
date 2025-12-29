@@ -31,6 +31,8 @@ class NoteEditor extends HTMLElement {
           flex-direction: column;
           background: #ffffff;
           overflow: hidden;
+          width: 100%;
+          height: 100%;
         }
 
         .editor-header {
@@ -40,11 +42,35 @@ class NoteEditor extends HTMLElement {
           padding: 1rem;
           border-bottom: 1px solid #d3d7cf;
           flex-shrink: 0;
+          order: -1; /* Ensure header is always first */
         }
 
         .editor-actions {
           display: flex;
           gap: 0.5rem;
+        }
+
+        .editor-content {
+          flex: 1;
+          overflow-y: auto;
+          padding: 1rem;
+          width: 100%;
+          box-sizing: border-box;
+        }
+
+        @media (max-width: 768px) {
+          .editor-content {
+            padding: 0.75rem;
+          }
+
+          .title-input {
+            font-size: 1.25rem !important;
+          }
+
+          .content-input {
+            font-size: 0.95rem !important;
+            min-height: 300px !important;
+          }
         }
 
         .btn-icon {
@@ -64,12 +90,6 @@ class NoteEditor extends HTMLElement {
         .btn-icon.active {
           background: #3584e4;
           color: white;
-        }
-
-        .editor-content {
-          flex: 1;
-          overflow-y: auto;
-          padding: 1.5rem;
         }
 
         .title-input {
@@ -166,11 +186,31 @@ class NoteEditor extends HTMLElement {
         .save-indicator.saved {
           color: #26a269;
         }
+
+        .mobile-back-btn {
+          display: none;
+          background: none;
+          border: none;
+          color: #18b582;
+          font-size: 1.25rem;
+          cursor: pointer;
+          padding: 0.25rem;
+          margin-right: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+          .mobile-back-btn {
+            display: inline-block;
+          }
+        }
       </style>
 
       ${this.currentNote ? `
         <div class="editor-header">
-          <span class="save-indicator" id="save-indicator"></span>
+          <div style="display: flex; align-items: center;">
+            <button class="mobile-back-btn" id="back-btn" title="Back to notes">&larr;</button>
+            <span class="save-indicator" id="save-indicator"></span>
+          </div>
           <div class="editor-actions">
             <button class="btn-icon ${this.isPreview ? '' : 'active'}" id="edit-btn" title="Edit">✏️</button>
             <button class="btn-icon ${this.isPreview ? 'active' : ''}" id="preview-btn" title="Preview">👁️</button>
@@ -213,6 +253,11 @@ class NoteEditor extends HTMLElement {
   }
 
   attachEventListeners() {
+    // Back button (mobile)
+    this.querySelector('#back-btn')?.addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('mobile:back'));
+    });
+
     // Edit button
     this.querySelector('#edit-btn')?.addEventListener('click', () => {
       this.isPreview = false;

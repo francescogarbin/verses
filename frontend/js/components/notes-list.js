@@ -48,12 +48,22 @@ class NotesList extends HTMLElement {
           background: #ffffff;
           border-right: 1px solid #d3d7cf;
           overflow: hidden;
+          width: 100%;
+          height: 100%;
+        }
+
+        @media (max-width: 768px) {
+          :host {
+            border-right: none;
+          }
         }
 
         .list-header {
           padding: 1rem;
           border-bottom: 1px solid #d3d7cf;
           flex-shrink: 0;
+          display: flex;
+          flex-direction: row;
         }
 
         .list-header h2 {
@@ -77,9 +87,27 @@ class NotesList extends HTMLElement {
           font-weight: 600;
         }
 
+        .mobile-back-btn {
+          display: none;
+          background: none;
+          border: none;
+          color: #18b582;
+          font-size: 1.25rem;
+          cursor: pointer;
+          padding: 0.25rem;
+        }
+
+        @media (max-width: 768px) {
+          .mobile-back-btn {
+            display: inline-block;
+          }
+        }
+
         .btn-new-note {
-          width: 100%;
+          height: 2rem;
           padding: 0.5rem;
+          padding-top: 4px;
+          padding-bottom: 4px;
           border: none;
           border-radius: 6px;
           background: #3584e4;
@@ -91,6 +119,7 @@ class NotesList extends HTMLElement {
           align-items: center;
           justify-content: center;
           gap: 0.5rem;
+          margin-left: auto;
         }
 
         .btn-new-note:hover {
@@ -151,6 +180,7 @@ class NotesList extends HTMLElement {
       <div class="list-header">
         ${this.currentNotebook ? `
           <h2>
+            <button class="mobile-back-btn" id="back-btn" title="Back to notebooks">&larr;</button>
             <span class="notebook-badge" style="background-color: ${this.currentNotebook.color}">
               ${this.getAbbreviation(this.currentNotebook.name)}
             </span>
@@ -193,6 +223,11 @@ class NotesList extends HTMLElement {
   }
 
   attachEventListeners() {
+    // Back button (mobile)
+    this.querySelector('#back-btn')?.addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('mobile:back'));
+    });
+
     // New note button
     this.querySelector('#new-note-btn')?.addEventListener('click', () => {
       const title = prompt('Note title:', 'New Note');

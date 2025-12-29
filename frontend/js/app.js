@@ -9,7 +9,8 @@ class VersesApp {
     this.selectedNote = null;
     this.notebooks = [];
     this.notes = [];
-    
+    this.mobileView = 'notes'; // 'notebooks', 'notes', 'editor'
+
     this.init();
   }
 
@@ -77,6 +78,40 @@ class VersesApp {
     window.addEventListener('auth:register', async (e) => {
       await this.register(e.detail);
     });
+
+    // Mobile navigation events
+    window.addEventListener('mobile:back', () => {
+      this.mobileGoBack();
+    });
+
+    window.addEventListener('mobile:showNotes', () => {
+      this.setMobileView('notes');
+    });
+
+    window.addEventListener('mobile:showEditor', () => {
+      this.setMobileView('editor');
+    });
+  }
+
+  // Mobile navigation
+  isMobile() {
+    return window.innerWidth <= 768;
+  }
+
+  setMobileView(view) {
+    this.mobileView = view;
+    const appMain = document.querySelector('.app-main');
+
+    appMain.classList.remove('show-notebooks', 'show-notes', 'show-editor');
+    appMain.classList.add(`show-${view}`);
+  }
+
+  mobileGoBack() {
+    if (this.mobileView === 'editor') {
+      this.setMobileView('notes');
+    } else if (this.mobileView === 'notes') {
+      this.setMobileView('notebooks');
+    }
   }
 
   showAuth() {
@@ -87,9 +122,14 @@ class VersesApp {
   showApp() {
     document.getElementById('auth-screen').classList.add('hidden');
     document.getElementById('app').classList.remove('hidden');
-    
+
     if (this.currentUser) {
       document.getElementById('user-email').textContent = this.currentUser.email;
+    }
+
+    // Initialize mobile view
+    if (this.isMobile()) {
+      this.setMobileView('notebooks');
     }
   }
 
@@ -127,13 +167,13 @@ class VersesApp {
   async loadNotebooks() {
     try {
       this.notebooks = await api.getNotebooks();
-      
+
       // Update sidebar
       const sidebar = document.getElementById('notebooks-sidebar');
       sidebar.setNotebooks(this.notebooks);
 
-      // Auto-select first notebook if none selected
-      if (!this.selectedNotebook && this.notebooks.length > 0) {
+      // Auto-select first notebook only on desktop
+      if (!this.selectedNotebook && this.notebooks.length > 0 && !this.isMobile()) {
         this.selectNotebook(this.notebooks[0]);
       }
     } catch (error) {
@@ -151,18 +191,23 @@ class VersesApp {
 
     // Load notes for this notebook
     await this.loadNotes(notebook.id);
+
+    // Mobile: navigate to notes view
+    if (this.isMobile()) {
+      this.setMobileView('notes');
+    }
   }
 
   async loadNotes(notebookId) {
     try {
       this.notes = await api.getNotesInNotebook(notebookId);
-      
+
       // Update notes list
       const notesList = document.getElementById('notes-list');
       notesList.setNotes(this.notes, this.selectedNotebook);
 
-      // Auto-select first note if none selected
-      if (!this.selectedNote && this.notes.length > 0) {
+      // Auto-select first note only on desktop
+      if (!this.selectedNote && this.notes.length > 0 && !this.isMobile()) {
         this.selectNote(this.notes[0]);
       } else if (this.notes.length === 0) {
         // Clear editor if no notes
@@ -184,6 +229,11 @@ class VersesApp {
     // Update editor
     const editor = document.getElementById('note-editor');
     editor.setNote(note);
+
+    // Mobile: navigate to editor view
+    if (this.isMobile()) {
+      this.setMobileView('editor');
+    }
   }
 
   async createNotebook({ name, color }) {
