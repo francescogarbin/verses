@@ -59,61 +59,107 @@ The name itself is a cosmic anagram discovered during development. We believe th
 
 ### Prerequisites
 - Docker & Docker Compose
-- Domain name (for SSL)
-- Linux server (Debian 12 recommended)
+- Git
 
-### Installation
+### Local Development
 
-1. **Clone the repository**
+Get Verses running on your local machine in minutes:
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/yourusername/verses.git
+cd verses
+
+# 2. Create environment file
+cp .env.example .env
+
+# 3. Launch with Docker Compose
+docker compose up -d --build
+
+# 4. Check logs
+docker compose logs -f
+```
+
+**Access Verses** at `http://localhost` and start writing!
+
+> **Note:** By default, `VERSES_ENVIRONMENT=development` uses HTTP only, no SSL certificates required.
+
+---
+
+### Production Deployment
+
+For deploying Verses on a remote server with HTTPS:
+
+#### Prerequisites
+- Linux server (Debian 12 / Ubuntu recommended)
+- Domain name pointing to your server
+- Ports 80 and 443 open
+
+#### 1. Clone and configure
+
 ```bash
 git clone https://github.com/yourusername/verses.git
 cd verses
+cp .env.example .env
 ```
 
-2. **Configure environment**
+#### 2. Edit `.env` for production
+
 ```bash
-# Copy example env file
-cp .env.example .env.development
+# Environment Configuration
+VERSES_ENVIRONMENT=production
+VERSES_CERTS_PATH=/etc/letsencrypt
 
-# Set the environment variables in .env.development
-$VERSES_MYSQL_ROOT_PASSWORD
-$VERSES_MYSQL_PASSWORD
-$VERSES_SECRET
-$VERSES_DEBUG
+# Security - Generate secure values!
+VERSES_SECRET_KEY=<generate with: python3 -c "import secrets; print(secrets.token_urlsafe(32))">
+VERSES_MYSQL_ROOT_PASSWORD=<generate with: openssl rand -base64 32>
+VERSES_MYSQL_PASSWORD=<generate with: openssl rand -base64 32>
 
-# Edit with your settings
-nano .env.development
-
-# Generate a secure SECRET_KEY
-python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+# Disable debug in production
+VERSES_DEBUG=False
 ```
 
-3. **Set up SSL certificates**
+#### 3. Set up SSL certificates
+
 ```bash
 # Install certbot
 sudo apt install certbot
 
-# Get certificate
+# Get certificate (replace with your domain)
 sudo certbot certonly --standalone -d your.domain.com
 ```
 
-4. **Update nginx configuration**
-Edit `nginx/conf.d/verses.conf` with your domain name.
+#### 4. Update Nginx configuration
 
-5. **Launch with Docker Compose**
+Edit `nginx/conf.d/production/verses.conf` and replace `verses.gamevisionitalia.it` with your domain:
+
+```nginx
+server_name your.domain.com;
+ssl_certificate /etc/letsencrypt/live/your.domain.com/fullchain.pem;
+ssl_certificate_key /etc/letsencrypt/live/your.domain.com/privkey.pem;
+```
+
+#### 5. Launch
+
 ```bash
-# Create symlink to development env
-ln -s .env.development .env
-
-# Build and start
 docker compose up -d --build
-
-# Check logs
 docker compose logs -f
 ```
 
-6. **Access Verses**
-Visit `https://your.domain.com` and start writing! ✍️
+**Access Verses** at `https://your.domain.com`
+
+---
+
+### Environment Variables Reference
+
+| Variable | Development | Production |
+|----------|-------------|------------|
+| `VERSES_ENVIRONMENT` | `development` | `production` |
+| `VERSES_CERTS_PATH` | `./nginx/certs` | `/etc/letsencrypt` |
+| `VERSES_DEBUG` | `True` | `False` |
+| `VERSES_SECRET_KEY` | any value | **secure random** |
+| `VERSES_MYSQL_PASSWORD` | any value | **secure random** |
+| `VERSES_MYSQL_ROOT_PASSWORD` | any value | **secure random** |
 
 ---
 

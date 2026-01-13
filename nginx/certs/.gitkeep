@@ -1,0 +1,2 @@
+# Placeholder for SSL certificates in development
+# In production, mount /etc/letsencrypt instead

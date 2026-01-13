@@ -52,9 +52,9 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/conf.d/${VERSES_ENVIRONMENT:-development}:/etc/nginx/conf.d
       - ./logs:/var/log/nginx
-      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ${VERSES_CERTS_PATH:-./nginx/certs}:/etc/letsencrypt:ro
       - ./frontend:/usr/share/nginx/html
     networks:
       - verses_network
