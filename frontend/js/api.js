@@ -122,10 +122,10 @@ class VersesAPI {
     return this.request(`/notes/${id}`);
   }
 
-  async createNote(title, content, notebookId) {
+  async createNote(content, notebookId) {
     return this.request('/notes', {
       method: 'POST',
-      body: JSON.stringify({ title, content, notebook_id: notebookId })
+      body: JSON.stringify({ content, notebook_id: notebookId })
     });
   }
 

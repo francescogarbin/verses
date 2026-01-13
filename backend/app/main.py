@@ -78,25 +78,42 @@ class NotebookResponse(BaseModel):
         from_attributes = True
 
 class NoteCreate(BaseModel):
-    title: str
-    content: str
+    content: str = ""
     notebook_id: int
 
 class NoteUpdate(BaseModel):
-    title: Optional[str] = None
     content: Optional[str] = None
     notebook_id: Optional[int] = None
 
 class NoteResponse(BaseModel):
     id: int
-    title: str
+    title: str  # Generated from first 50 chars of content
     content: str
     created_at: datetime
     updated_at: datetime
     notebook_id: int
-    
+
     class Config:
         from_attributes = True
+
+    @classmethod
+    def from_note(cls, note: "models.Note") -> "NoteResponse":
+        """Create response with title derived from content"""
+        content = note.content or ""
+        # Get first line or first 50 chars as title
+        first_line = content.split('\n')[0].strip()
+        title = first_line[:50] if first_line else "Untitled"
+        if len(first_line) > 50:
+            title = title.rstrip() + "..."
+
+        return cls(
+            id=note.id,
+            title=title,
+            content=note.content,
+            created_at=note.created_at,
+            updated_at=note.updated_at,
+            notebook_id=note.notebook_id
+        )
 
 # ==================== Root Endpoints ====================
 
@@ -314,18 +331,18 @@ async def get_notes_in_notebook(
         models.Notebook.id == notebook_id,
         models.Notebook.user_id == current_user.id
     ).first()
-    
+
     if not notebook:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Notebook not found"
         )
-    
+
     notes = db.query(models.Note).filter(
         models.Note.notebook_id == notebook_id
     ).order_by(models.Note.updated_at.desc()).all()
-    
-    return notes
+
+    return [NoteResponse.from_note(note) for note in notes]
 
 @app.get("/notes/{note_id}", response_model=NoteResponse)
 async def get_note(
@@ -338,14 +355,14 @@ async def get_note(
         models.Note.id == note_id,
         models.Notebook.user_id == current_user.id
     ).first()
-    
+
     if not note:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Note not found"
         )
-    
-    return note
+
+    return NoteResponse.from_note(note)
 
 @app.post("/notes", response_model=NoteResponse, status_code=status.HTTP_201_CREATED)
 async def create_note(
@@ -359,24 +376,23 @@ async def create_note(
         models.Notebook.id == note.notebook_id,
         models.Notebook.user_id == current_user.id
     ).first()
-    
+
     if not notebook:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Notebook not found"
         )
-    
+
     new_note = models.Note(
-        title=note.title,
         content=note.content,
         notebook_id=note.notebook_id
     )
-    
+
     db.add(new_note)
     db.commit()
     db.refresh(new_note)
-    
-    return new_note
+
+    return NoteResponse.from_note(new_note)
 
 @app.put("/notes/{note_id}", response_model=NoteResponse)
 async def update_note(
@@ -390,15 +406,13 @@ async def update_note(
         models.Note.id == note_id,
         models.Notebook.user_id == current_user.id
     ).first()
-    
+
     if not note:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Note not found"
         )
-    
-    if note_update.title is not None:
-        note.title = note_update.title
+
     if note_update.content is not None:
         note.content = note_update.content
     if note_update.notebook_id is not None:
@@ -407,21 +421,21 @@ async def update_note(
             models.Notebook.id == note_update.notebook_id,
             models.Notebook.user_id == current_user.id
         ).first()
-        
+
         if not new_notebook:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Target notebook not found"
             )
-        
+
         note.notebook_id = note_update.notebook_id
-    
+
     note.updated_at = datetime.utcnow()
-    
+
     db.commit()
     db.refresh(note)
-    
-    return note
+
+    return NoteResponse.from_note(note)
 
 @app.delete("/notes/{note_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_note(

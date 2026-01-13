@@ -276,14 +276,14 @@ class VersesApp {
     }
   }
 
-  async createNote({ title, content }) {
+  async createNote({ content }) {
     if (!this.selectedNotebook) {
       alert('Please select a notebook first');
       return;
     }
 
     try {
-      const note = await api.createNote(title, content, this.selectedNotebook.id);
+      const note = await api.createNote(content, this.selectedNotebook.id);
       await this.loadNotes(this.selectedNotebook.id);
       this.selectNote(note);
     } catch (error) {

@@ -33,14 +33,13 @@ class Notebook(Base):
 
 class Note(Base):
     __tablename__ = "notes"
-    
+
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String(255), nullable=False)
-    content = Column(Text, nullable=False)
+    content = Column(Text, nullable=False, default="")
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     notebook_id = Column(Integer, ForeignKey("notebooks.id"), nullable=False)
-    
+
     # Relationship
     notebook = relationship("Notebook", back_populates="notes")
 

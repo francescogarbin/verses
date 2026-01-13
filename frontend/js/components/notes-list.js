@@ -228,14 +228,11 @@ class NotesList extends HTMLElement {
       window.dispatchEvent(new CustomEvent('mobile:back'));
     });
 
-    // New note button
+    // New note button - create note directly without prompting for title
     this.querySelector('#new-note-btn')?.addEventListener('click', () => {
-      const title = prompt('Note title:', 'New Note');
-      if (title) {
-        window.dispatchEvent(new CustomEvent('notes:create', {
-          detail: { title, content: '' }
-        }));
-      }
+      window.dispatchEvent(new CustomEvent('notes:create', {
+        detail: { content: '' }
+      }));
     });
 
     // Note items

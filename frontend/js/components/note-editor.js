@@ -92,22 +92,6 @@ class NoteEditor extends HTMLElement {
           color: white;
         }
 
-        .title-input {
-          width: 100%;
-          border: none;
-          font-size: 1.5rem;
-          font-weight: 600;
-          padding: 0.5rem 0;
-          margin-bottom: 1rem;
-          border-bottom: 2px solid transparent;
-          transition: border-color 0.2s;
-        }
-
-        .title-input:focus {
-          outline: none;
-          border-bottom-color: #3584e4;
-        }
-
         .content-input {
           width: 100%;
           border: none;
@@ -223,17 +207,10 @@ class NoteEditor extends HTMLElement {
             <h1>${this.currentNote.title || 'Untitled'}</h1>
             <div class="preview-content" id="preview-content"></div>
           ` : `
-            <input 
-              type="text" 
-              class="title-input" 
-              id="title-input" 
-              placeholder="Note title..."
-              value="${this.currentNote.title || ''}">
-            
-            <textarea 
-              class="content-input" 
-              id="content-input" 
-              placeholder="Write your note in Markdown...">${this.currentNote.content || ''}</textarea>
+            <textarea
+              class="content-input"
+              id="content-input"
+              placeholder="Start writing your note...">${this.currentNote.content || ''}</textarea>
           `}
         </div>
       ` : `
@@ -280,14 +257,7 @@ class NoteEditor extends HTMLElement {
     });
 
     // Auto-save on input
-    const titleInput = this.querySelector('#title-input');
     const contentInput = this.querySelector('#content-input');
-
-    if (titleInput) {
-      titleInput.addEventListener('input', () => {
-        this.scheduleAutoSave();
-      });
-    }
 
     if (contentInput) {
       contentInput.addEventListener('input', () => {
@@ -326,29 +296,29 @@ class NoteEditor extends HTMLElement {
   saveNote() {
     if (!this.currentNote) return;
 
-    const titleInput = this.querySelector('#title-input');
     const contentInput = this.querySelector('#content-input');
 
-    if (!titleInput || !contentInput) return;
+    if (!contentInput) return;
 
-    const title = titleInput.value;
     const content = contentInput.value;
 
     // Only save if something changed
-    if (title === this.currentNote.title && content === this.currentNote.content) {
+    if (content === this.currentNote.content) {
       return;
     }
 
     window.dispatchEvent(new CustomEvent('notes:update', {
       detail: {
         id: this.currentNote.id,
-        data: { title, content }
+        data: { content }
       }
     }));
 
     // Update current note
-    this.currentNote.title = title;
     this.currentNote.content = content;
+    // Update title from first line (for UI consistency)
+    const firstLine = content.split('\n')[0].trim();
+    this.currentNote.title = firstLine.substring(0, 50) || 'Untitled';
 
     // Update save indicator
     const indicator = this.querySelector('#save-indicator');
